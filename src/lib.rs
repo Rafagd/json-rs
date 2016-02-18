@@ -254,8 +254,6 @@ impl Json {
             panic!("Object wasn't properly terminated.");
         }
 
-        println!("Token: {:?}", content);
-
         JsonOption::Object(content)
     }
 }
