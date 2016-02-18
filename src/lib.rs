@@ -133,7 +133,7 @@ impl Json {
             loop {
                 let chr = match slice.peek() {
                     Some(chr) => *chr,
-                    None      => { println!("Broke"); break 'tokenizer },
+                    None      => { break 'tokenizer },
                 };
 
                 match chr {
@@ -191,7 +191,7 @@ impl Json {
             'sepcheck: loop {
                 let chr = match slice.peek() {
                     Some(chr) => *chr,
-                    None      => { println!("Broke"); break 'tokenizer },
+                    None      => { break 'tokenizer },
                 };
 
                 match chr {
