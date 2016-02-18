@@ -1,0 +1,6 @@
+[package]
+name = "json"
+version = "0.1.0"
+authors = ["Rafael Gomes Dantas <rafagd@gmail.com>"]
+
+[dependencies]
