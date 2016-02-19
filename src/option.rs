@@ -11,6 +11,50 @@ pub enum JsonOption {
     None,
 }
 
+impl JsonOption {
+    pub fn object(&self) -> &Self {
+        match *self {
+            JsonOption::Object(_) => self,
+            _ => panic!("Expecting Object got {}", self),
+        }
+    }
+
+    pub fn array(&self) -> &Self {
+        match *self {
+            JsonOption::Array(_) => self,
+            _ => panic!("Expecting Array got {}", self),
+        }
+    }
+
+    pub fn string(&self) -> &Self {
+        match *self {
+            JsonOption::String(_) => self,
+            _ => panic!("Expecting String got {}", self),
+        }
+    }
+
+    pub fn integer(&self) -> &Self {
+        match *self {
+            JsonOption::Integer(_) => self,
+            _ => panic!("Expecting Integer got {}", self),
+        }
+    }
+
+    pub fn number(&self) -> &Self {
+        match *self {
+            JsonOption::Number(_) => self,
+            _ => panic!("Expecting Number got {}", self),
+        }
+    }
+
+    pub fn none(&self) -> &Self {
+        match *self {
+            JsonOption::None => self,
+            _ => panic!("Expecting None got {}", self),
+        }
+    }
+}
+
 impl Display for JsonOption {
     fn fmt(&self, formatter: &mut Formatter) -> Result<(), Error> {
         match *self {
