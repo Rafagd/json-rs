@@ -12,44 +12,43 @@ pub enum JsonOption {
 }
 
 impl JsonOption {
-    pub fn object(&self) -> &Self {
+    pub fn object(&self) -> &HashMap<String, JsonOption> {
         match *self {
-            JsonOption::Object(_) => self,
+            JsonOption::Object(ref object) => object,
             _ => panic!("Expecting Object got {}", self),
         }
     }
 
-    pub fn array(&self) -> &Self {
+    pub fn array(&self) -> &Vec<JsonOption> {
         match *self {
-            JsonOption::Array(_) => self,
+            JsonOption::Array(ref array) => array,
             _ => panic!("Expecting Array got {}", self),
         }
     }
 
-    pub fn string(&self) -> &Self {
+    pub fn string(&self) -> &String {
         match *self {
-            JsonOption::String(_) => self,
+            JsonOption::String(ref string) => string,
             _ => panic!("Expecting String got {}", self),
         }
     }
 
-    pub fn integer(&self) -> &Self {
+    pub fn integer(&self) -> &i32 {
         match *self {
-            JsonOption::Integer(_) => self,
+            JsonOption::Integer(ref integer) => integer,
             _ => panic!("Expecting Integer got {}", self),
         }
     }
 
-    pub fn number(&self) -> &Self {
+    pub fn number(&self) -> &f32 {
         match *self {
-            JsonOption::Number(_) => self,
+            JsonOption::Number(ref number) => number,
             _ => panic!("Expecting Number got {}", self),
         }
     }
 
-    pub fn none(&self) -> &Self {
+    pub fn none(&self) {
         match *self {
-            JsonOption::None => self,
             _ => panic!("Expecting None got {}", self),
         }
     }
