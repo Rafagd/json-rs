@@ -1,9 +1,6 @@
-#![feature(catch_panic)]
-
 extern crate json;
 
 use json::{ Json, JsonOption };
-use std::thread;
 use std::collections::HashMap;
 
 #[test]
@@ -40,11 +37,6 @@ fn parse_string() {
 
     json = Json::parse("\"He\\\\llo\"");
     assert_eq!(json, JsonOption::String("He\\llo".to_string()));
-
-    let result = thread::catch_panic(|| {
-        Json::parse("\"Hello");
-    });
-    assert!(result.is_err());
 }
 
 #[test]

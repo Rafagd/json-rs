@@ -1,5 +1,3 @@
-extern crate core;
-
 pub mod option;
     mod parser;
     mod node;
