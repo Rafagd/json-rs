@@ -3,6 +3,32 @@ rust:
   - stable
   - beta
   - nightly
+
 matrix:
   allow_failures:
     - rust: nightly
+
+addons:
+    apt:
+        packages:
+            - libcurl4-openssl-dev
+            - libelf-dev
+            - libdw-dev
+
+before_script:
+    - pip install 'travis-cargo<0.2' --user
+    - export PATH=$HOME/.local/bin:$PATH
+
+script:
+    - travis-cargo --only stable build
+    - travis-cargo --only stable test
+    - travis-cargo --only stable doc
+
+    - travis-cargo --only beta   build
+    - travis-cargo --only beta   test
+
+    - travis-cargo --only nigtly build -- --features nightly nightly-testing
+    - travis-cargo --only nigtly test  -- --features nightly nightly-testing
+
+after_success:
+    - travis-cargo --only stable coveralls --no-sudo

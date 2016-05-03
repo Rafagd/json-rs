@@ -1,6 +1,6 @@
-extern crate json;
+extern crate simple_json;
 
-use json::{ Json, JsonOption };
+use simple_json::{ Json, JsonOption };
 use std::collections::HashMap;
 
 #[test]

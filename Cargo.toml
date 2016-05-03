@@ -1,6 +1,11 @@
 [package]
-name = "json"
-version = "0.1.0"
-authors = ["Rafael Gomes Dantas <rafagd@gmail.com>"]
+name        = "simple_json"
+version     = "0.1.0"
+authors     = ["Rafael Gomes Dantas <rafagd@gmail.com>"]
 
-[dependencies]
+description = "A simple runtime JSON parser."
+repository  = "https://github.com/Rafagd/json-rs"
+readme      = "README.md"
+keywords    = [ "json", "parser", "simple", "easy" ]
+license     = "BSD-2-Clause"
+
