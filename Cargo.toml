@@ -1,6 +1,6 @@
 [package]
 name        = "simple_json"
-version     = "0.1.0"
+version     = "0.1.1"
 authors     = ["Rafael Gomes Dantas <rafagd@gmail.com>"]
 
 description = "A simple runtime JSON parser."
