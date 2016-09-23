@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::iter::Peekable;
 use std::str::Chars;
 
@@ -8,23 +9,15 @@ pub enum Error {
 }
 
 #[derive(Debug, PartialEq)]
-pub struct JsonObject;
-#[derive(Debug, PartialEq)]
-pub struct JsonArray;
-
-#[derive(Debug, PartialEq)]
 pub enum JsonNumber {
     Integer(i64),
     Float(f64),
 }
 
 #[derive(Debug, PartialEq)]
-pub struct JsonString;
-
-#[derive(Debug, PartialEq)]
 pub enum Json {
-    Object(JsonObject),
-    Array(JsonArray),
+    Object(HashMap<String, Json>),
+    Array(Vec<Json>),
     String(String),
     Number(JsonNumber),
     Boolean(bool),
@@ -37,38 +30,43 @@ impl Json {
         let mut slice    = text.chars();
         let mut peekable = (&mut slice).peekable();
 
+        Json::parse_node(&mut peekable)
+    }
+
+    fn parse_node(slice: &mut Peekable<&mut Chars>) -> Result<Json, Error>
+    {
         let mut content = Err(Error::UnexpectedEof);
 
         'tokenizer: loop {
-            let current = match peekable.peek() {
+            let current = match slice.peek() {
                 Some(chr) => *chr,
                 None      => { break 'tokenizer },
             };
 
             match current {
                 ' ' | '\r' | '\n' | '\t' => {
-                    peekable.next();
+                    slice.next();
                 },
                 'n' => {
-                    content = Json::parse_null(&mut peekable);
+                    content = Json::parse_null(slice);
                 },
                 'f' | 't' => {
-                    content = Json::parse_boolean(&mut peekable);
+                    content = Json::parse_boolean(slice);
                 },
                 '0'...'9' | '-' => {
-                    content = Json::parse_number(&mut peekable);
+                    content = Json::parse_number(slice);
                 },
                 '"' => {
-                    content = Json::parse_string(&mut peekable);
+                    content = Json::parse_string(slice);
                 },
                 '[' => {
-                    content = Json::parse_array(&mut peekable);
+                    content = Json::parse_array(slice);
                 },
                 '{' => {
-                    content = Json::parse_object(&mut peekable);
+                    content = Json::parse_object(slice);
                 },
 
-                _ => { return Err(Error::InvalidCharacter(current.to_string())) }
+                _ => { break 'tokenizer }
             }
         }
 
@@ -269,8 +267,6 @@ impl Json {
                 None      => { break 'tokenizer },
             };
 
-            println!("{:?}", stage);
-
             match stage {
                 Stages::Start => match current {
                     '"'       => { stage = Stages::Unescaped; slice.next(); },
@@ -323,142 +319,165 @@ impl Json {
             }
         }
 
-        println!("{:?} - {:?}", stage, token);
-
         Ok(Json::String(token))
     }
 
     fn parse_array(slice: &mut Peekable<&mut Chars>) -> Result<Json, Error>
     {
-        Err(Error::UnexpectedEof)
+        let mut array = vec![];
+
+        #[derive(Debug, PartialEq)]
+        enum Stages {
+            Start,
+            FirstValue,
+            Value,
+            Comma,
+            End,
+        }
+
+        let mut stage = Stages::Start;
+
+        'tokenizer: loop {
+            let current = match slice.peek() {
+                Some(chr) => *chr,
+                None      => { break 'tokenizer },
+            };
+
+            match stage {
+                Stages::Start => match current {
+                    '[' => { stage = Stages::FirstValue; slice.next(); },
+
+                    // Waiting for quotation mark.
+                    _ => {
+                        return Err(Error::InvalidCharacter(current.to_string()));
+                    },
+                },
+                Stages::FirstValue => match current {
+                    ']' => { stage = Stages::End; },
+                    _   => {
+                        stage = Stages::Comma;
+
+                        let node = match Json::parse_node(slice) {
+                            Ok(node) => node,
+                            Err(e)   => { return Err(e) },
+                        };
+
+                        array.push(node);
+                    },
+                },
+                Stages::Comma => match current {
+                    ',' => { stage = Stages::Value; slice.next(); },
+                    ']' => { stage = Stages::End; },
+
+                    // Waiting for valid escape code.
+                    _ => {
+                        return Err(Error::InvalidCharacter(current.to_string()));
+                    },
+                },
+                Stages::Value => {
+                    stage = Stages::Comma;
+
+                    let node = match Json::parse_node(slice) {
+                        Ok(node) => node,
+                        Err(e)   => { return Err(e) },
+                    };
+
+                    array.push(node);
+                },
+                Stages::End => match current {
+                    ']' => { slice.next(); break 'tokenizer; },
+                    // Waiting for valid escape code.
+                    _ => {
+                        return Err(Error::InvalidCharacter(current.to_string()));
+                    },
+                },
+            }
+        }
+
+        Ok(Json::Array(array))
     }
 
     fn parse_object(slice: &mut Peekable<&mut Chars>) -> Result<Json, Error>
     {
-        Err(Error::UnexpectedEof)
+        let mut object = HashMap::new();
+        let mut index  = String::new();
+
+        #[derive(Debug, PartialEq)]
+        enum Stages {
+            Start,
+            Index,
+            Colon,
+            Value,
+            Comma,
+            End,
+        }
+
+        let mut stage = Stages::Start;
+
+        'tokenizer: loop {
+            let current = match slice.peek() {
+                Some(chr) => *chr,
+                None      => { break 'tokenizer },
+            };
+
+            match stage {
+                Stages::Start => match current {
+                    '{' => { stage = Stages::Index; slice.next(); },
+
+                    // Waiting for quotation mark.
+                    _ => {
+                        return Err(Error::InvalidCharacter(current.to_string()));
+                    },
+                },
+                Stages::Index => match current {
+                    '}' => { stage = Stages::End; },
+                    _   => {
+                        stage = Stages::Colon;
+                        index = match Json::parse_string(slice) {
+                            Ok(Json::String(index)) => index,
+                            Err(e) => { return Err(e); },
+                            _      => { return Err(Error::InvalidCharacter(current.to_string())); }
+                        };
+                    },
+                },
+                Stages::Colon => match current {
+                    ':' => { stage = Stages::Value; slice.next(); },
+
+                    // Waiting for valid escape code.
+                    _ => {
+                        return Err(Error::InvalidCharacter(current.to_string()));
+                    },
+                },
+                Stages::Value => {
+                    stage = Stages::Comma;
+
+                    let node = match Json::parse_node(slice) {
+                        Ok(node) => node,
+                        Err(e)   => { return Err(e) },
+                    };
+
+                    object.insert(index.clone(), node);
+                },
+                Stages::Comma => match current {
+                    ',' => { stage = Stages::Index; slice.next(); },
+                    '}' => { stage = Stages::End; },
+
+                    // Waiting for valid escape code.
+                    _ => {
+                        return Err(Error::InvalidCharacter(current.to_string()));
+                    },
+                },
+                Stages::End => match current {
+                    '}' => { slice.next(); break 'tokenizer; },
+                    // Waiting for valid escape code.
+                    _ => {
+                        return Err(Error::InvalidCharacter(current.to_string()));
+                    },
+                },
+            }
+        }
+
+        Ok(Json::Object(object))
     }
 }
 
-mod tests {
-    use super::{ Json, JsonNumber };
-
-    #[test]
-    fn valid_null()
-    {
-        let json = Json::parse("null");
-        assert_eq!(json, Ok(Json::Null));
-    }
-
-    #[test]
-    fn valid_bool()
-    {
-        let json = Json::parse("false");
-        assert_eq!(json, Ok(Json::Boolean(false)));
-        
-        let json = Json::parse("true");
-        assert_eq!(json, Ok(Json::Boolean(true)));
-    }
-
-    #[test]
-    fn valid_integer_number()
-    {
-        let json = Json::parse("0");
-        assert_eq!(json, Ok(Json::Number(JsonNumber::Integer(0))));
-
-        let json = Json::parse("-0");
-        assert_eq!(json, Ok(Json::Number(JsonNumber::Integer(0))));
-
-        let json = Json::parse("1");
-        assert_eq!(json, Ok(Json::Number(JsonNumber::Integer(1))));
-
-        let json = Json::parse("-1");
-        assert_eq!(json, Ok(Json::Number(JsonNumber::Integer(-1))));
-
-        let json = Json::parse("20");
-        assert_eq!(json, Ok(Json::Number(JsonNumber::Integer(20))));
-
-        let json = Json::parse("-20");
-        assert_eq!(json, Ok(Json::Number(JsonNumber::Integer(-20))));
-
-        let json = Json::parse("21");
-        assert_eq!(json, Ok(Json::Number(JsonNumber::Integer(21))));
-
-        let json = Json::parse("-21");
-        assert_eq!(json, Ok(Json::Number(JsonNumber::Integer(-21))));
-    }
-
-    #[test]
-    fn valid_float_number()
-    {
-        let json = Json::parse("0.0");
-        assert_eq!(json, Ok(Json::Number(JsonNumber::Float(0.0))));
-
-        let json = Json::parse("-0.0");
-        assert_eq!(json, Ok(Json::Number(JsonNumber::Float(0.0))));
-
-        let json = Json::parse("1.1");
-        assert_eq!(json, Ok(Json::Number(JsonNumber::Float(1.1))));
-
-        let json = Json::parse("-1.1");
-        assert_eq!(json, Ok(Json::Number(JsonNumber::Float(-1.1))));
-
-        let json = Json::parse("20.01");
-        assert_eq!(json, Ok(Json::Number(JsonNumber::Float(20.01))));
-
-        let json = Json::parse("-20.01");
-        assert_eq!(json, Ok(Json::Number(JsonNumber::Float(-20.01))));
-
-        let json = Json::parse("21.12");
-        assert_eq!(json, Ok(Json::Number(JsonNumber::Float(21.12))));
-
-        let json = Json::parse("-21.12");
-        assert_eq!(json, Ok(Json::Number(JsonNumber::Float(-21.12))));
-    }
-
-    #[test]
-    fn valid_exponent_number()
-    {
-        let json = Json::parse("0e0");
-        assert_eq!(json, Ok(Json::Number(JsonNumber::Float(0.))));
-
-        let json = Json::parse("-0e0");
-        assert_eq!(json, Ok(Json::Number(JsonNumber::Float(0.))));
-
-        let json = Json::parse("1e1");
-        assert_eq!(json, Ok(Json::Number(JsonNumber::Float(1e1))));
-
-        let json = Json::parse("-1e1");
-        assert_eq!(json, Ok(Json::Number(JsonNumber::Float(-1e1))));
-
-        let json = Json::parse("20.01e10");
-        assert_eq!(json, Ok(Json::Number(JsonNumber::Float(20.01e10))));
-
-        let json = Json::parse("-20.01e10");
-        assert_eq!(json, Ok(Json::Number(JsonNumber::Float(-20.01e10))));
-
-        let json = Json::parse("21.12e2");
-        assert_eq!(json, Ok(Json::Number(JsonNumber::Float(21.12e2))));
-
-        let json = Json::parse("-21.12e2");
-        assert_eq!(json, Ok(Json::Number(JsonNumber::Float(-21.12e2))));
-    }
-
-    #[test]
-    fn valid_string()
-    {
-        let json = Json::parse("\"\"");
-        assert_eq!(json, Ok(Json::String(String::new())));
-
-        let json = Json::parse("\"This is a normal ASCII string.\"");
-        assert_eq!(json, Ok(Json::String(String::from("This is a normal ASCII string."))));
-
-        let json = Json::parse("\"I also use unicode: ٩(-̮̮̃-̃)۶ ٩(●̮̮̃•̃)۶ ٩(͡๏̯͡๏)۶ ٩(-̮̮̃•̃).\"");
-        assert_eq!(json, Ok(Json::String(String::from("I also use unicode: ٩(-̮̮̃-̃)۶ ٩(●̮̮̃•̃)۶ ٩(͡๏̯͡๏)۶ ٩(-̮̮̃•̃)."))));
-
-        let json = Json::parse("\"I can escape some things, like \\\"\\\\\\/\\b\\f\\n\\r\\t!\"");
-        assert_eq!(json, Ok(Json::String(String::from("I can escape some things, like \"\\/\u{0008}\u{000C}\n\r\t!"))));
-
-        let json = Json::parse("\"I can even escape unicode: \\u3042.\"");
-        assert_eq!(json, Ok(Json::String(String::from("I can even escape unicode: あ."))));
-    }
-}
