@@ -42,79 +42,8 @@ impl Json {
 
         string
     }
-
-    pub fn as_null(&self) -> ()
-    {
-        if *self != Json::Null {
-            panic!("Expecting Json::Null, got {:?}", self);
-        }
-    }
-
-    pub fn as_bool(&self) -> bool
-    {
-        if let Json::Boolean(value) = *self {
-            return value;
-
-        } else {
-            panic!("Expecting Json::Boolean, got {:?}", self);
-        }
-    }
-
-    pub fn as_number(&self) -> Number
-    {
-        if let Json::Number(ref value) = *self {
-            value.clone()
-
-        } else {
-            panic!("Expecting Json::Number, got {:?}", self);
-        }
-    }
-
-    pub fn as_string_ptr(&self) -> &String
-    {
-        if let Json::String(ref value) = *self {
-            return value;
-
-        } else {
-            panic!("Expecting Json::String, got {:?}", self);
-        }
-    }
-
-    pub fn as_string(&self) -> String
-    {
-        self.as_string_ptr().clone()
-    }
-
-    pub fn as_array_ptr(&self) -> &Vec<Json>
-    {
-        if let Json::Array(ref value) = *self {
-            return value;
-
-        } else {
-            panic!("Expecting Json::Boolean, got {:?}", self);
-        }
-    }
-
-    pub fn as_array(&self) -> Vec<Json>
-    {
-        self.as_array_ptr().clone()
-    }
-
-    pub fn as_object_ptr(&self) -> &HashMap<String, Json>
-    {
-        if let Json::Object(ref value) = *self {
-            return value;
-
-        } else {
-            panic!("Expecting Json::Boolean, got {:?}", self);
-        }
-    }
-
-    pub fn as_object(&self) -> HashMap<String, Json>
-    {
-        self.as_object_ptr().clone()
-    }
 }
+
 impl From<HashMap<String, Json>> for Json
 {
     fn from(map: HashMap<String, Json>) -> Json
@@ -139,11 +68,27 @@ impl From<String> for Json
     }
 }
 
+impl<'a> From<&'a str> for Json
+{
+    fn from(string: &'a str) -> Json
+    {
+        Json::String(String::from(string))
+    }
+}
+
 impl From<u64> for Json
 {
     fn from(number: u64) -> Json
     {
         Json::Number(Number::Unsigned(number))
+    }
+}
+
+impl From<i32> for Json
+{
+    fn from(number: i32) -> Json
+    {
+        Json::Number(Number::Integer(number as i64))
     }
 }
 
@@ -176,6 +121,107 @@ impl From<()> for Json
     fn from(_: ()) -> Json
     {
         Json::Null
+    }
+}
+
+impl From<Json> for HashMap<String, Json>
+{
+    fn from(json: Json) -> HashMap<String, Json>
+    {
+        if let Json::Object(ref value) = json {
+            return value.clone();
+
+        } else {
+            panic!("Expecting Json::Boolean, got {:?}", json);
+        }
+    }
+}
+
+impl From<Json> for Vec<Json>
+{
+    fn from(json: Json) -> Vec<Json>
+    {
+        if let Json::Array(ref value) = json {
+            return value.clone();
+
+        } else {
+            panic!("Expecting Json::Boolean, got {:?}", json);
+        }
+    }
+}
+
+impl From<Json> for String
+{
+    fn from(json: Json) -> String
+    {
+        if let Json::String(ref value) = json {
+            return value.clone();
+
+        } else {
+            panic!("Expecting Json::String, got {:?}", json);
+        }
+    }
+}
+
+impl From<Json> for u64
+{
+    fn from(json: Json) -> u64
+    { 
+        match json {
+            Json::Number(value) => value.into(),
+            _ => {
+                panic!("Expecting Json::Number, got {:?}", json);
+            }
+        }
+    }
+}
+
+impl From<Json> for i64
+{
+    fn from(json: Json) -> i64
+    {
+        if let Json::Number(ref value) = json {
+            value.clone().into()
+
+        } else {
+            panic!("Expecting Json::Number, got {:?}", json);
+        }
+    }
+}
+
+impl From<Json> for f64
+{
+    fn from(json: Json) -> f64
+    {
+        if let Json::Number(ref value) = json {
+            value.clone().into()
+
+        } else {
+            panic!("Expecting Json::Number, got {:?}", json);
+        }
+    }
+}
+
+impl From<Json> for bool
+{
+    fn from(json: Json) -> bool
+    {
+        if let Json::Boolean(value) = json {
+            return value;
+
+        } else {
+            panic!("Expecting Json::Boolean, got {:?}", json);
+        }
+    }
+}
+
+impl From<Json> for ()
+{
+    fn from(json: Json) -> ()
+    {
+        if json != Json::Null {
+            panic!("Expecting Json::Null, got {:?}", json);
+        }
     }
 }
 
