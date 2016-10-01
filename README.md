@@ -1,8 +1,8 @@
 Runtime JSON parser for Rust
 ============================
-[![Current version](https://crates.io/crates/simple_json)](https://img.shields.io/crates/v/simple_json.svg)
-[![Master status](https://travis-ci.org/Rafagd/json-rs.svg?branch=master)](https://travis-ci.org/Rafagd/json-rs) 
-[![Coverage status](https://coveralls.io/repos/github/Rafagd/json-rs/badge.svg?branch=master)](https://coveralls.io/github/Rafagd/json-rs?branch=master)
+[![crates.io](https://img.shields.io/crates/v/simple_json.svg)](https://crates.io/crates/simple_json)
+[![travis-ci](https://travis-ci.org/Rafagd/json-rs.svg?branch=master)](https://travis-ci.org/Rafagd/json-rs) 
+[![coveralls](https://coveralls.io/repos/github/Rafagd/json-rs/badge.svg?branch=master)](https://coveralls.io/github/Rafagd/json-rs?branch=master)
 
 `simple_json` is a JSON run-time recursive parser created for simplyfing both reading and writing JSON-encoded data. It's also supposed to be compatible with the current stable release so if you detect any problems, please report them.
 
