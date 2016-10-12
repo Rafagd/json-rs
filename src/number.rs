@@ -1,8 +1,21 @@
 #[derive(Clone, Debug, PartialEq)]
-pub enum Number {
+pub enum Number
+{
     Unsigned(u64),
     Integer(i64),
     Float(f64),
+}
+
+impl Number
+{
+    pub fn to_string(&self) -> String
+    {
+        match self {
+            &Number::Unsigned(value) => value.to_string(),
+            &Number::Integer(value)  => value.to_string(),
+            &Number::Float(value)    => value.to_string(),
+        }
+    }
 }
 
 impl From<u64> for Number
