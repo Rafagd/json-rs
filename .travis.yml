@@ -30,20 +30,20 @@ script:
     - travis-cargo --only nigtly build -- --features nightly nightly-testing
     - travis-cargo --only nigtly test  -- --features nightly nightly-testing
 
-after_success: |
-    wget http://github.com/SimonKagstrom/kcov/archive/master.tar.gz &&
-    tar xzf master.tar.gz &&
-    cd kcov-master &&
-    mkdir build &&
-    cd build &&
-    cmake .. &&
-    make &&
-    sudo make install &&
-    cd ../.. &&
-    rm -rf kcov-master &&
-    for file in target/debug/convert-*;   do mkdir -p "target/cov/$(basename $file)"; kcov --coveralls-id=$TRAVIS_JOB_ID --exclude-pattern=/.cargo,/usr/lib --verify "target/cov/$(basename $file)" "$file"; done &&
-    for file in target/debug/example-*;   do mkdir -p "target/cov/$(basename $file)"; kcov --coveralls-id=$TRAVIS_JOB_ID --exclude-pattern=/.cargo,/usr/lib --verify "target/cov/$(basename $file)" "$file"; done &&
-    for file in target/debug/to_string-*; do mkdir -p "target/cov/$(basename $file)"; kcov --coveralls-id=$TRAVIS_JOB_ID --exclude-pattern=/.cargo,/usr/lib --verify "target/cov/$(basename $file)" "$file"; done &&
-    for file in target/debug/cvalid-*;    do mkdir -p "target/cov/$(basename $file)"; kcov --coveralls-id=$TRAVIS_JOB_ID --exclude-pattern=/.cargo,/usr/lib --verify "target/cov/$(basename $file)" "$file"; done &&
-    echo "The End"
+after_success:
+    - wget http://github.com/SimonKagstrom/kcov/archive/master.tar.gz
+    - tar xzf master.tar.gz
+    - cd kcov-master
+    - mkdir build
+    - cd build
+    - cmake ..
+    - make
+    - sudo make install
+    - cd ../..
+    - rm -rf kcov-master
+    - for file in target/debug/convert-*;   do mkdir -p "target/cov/$(basename $file)"; kcov --coveralls-id=$TRAVIS_JOB_ID --exclude-pattern=/.cargo,/usr/lib --verify "target/cov/$(basename $file)" "$file"; done
+    - for file in target/debug/example-*;   do mkdir -p "target/cov/$(basename $file)"; kcov --coveralls-id=$TRAVIS_JOB_ID --exclude-pattern=/.cargo,/usr/lib --verify "target/cov/$(basename $file)" "$file"; done
+    - for file in target/debug/to_string-*; do mkdir -p "target/cov/$(basename $file)"; kcov --coveralls-id=$TRAVIS_JOB_ID --exclude-pattern=/.cargo,/usr/lib --verify "target/cov/$(basename $file)" "$file"; done
+    - for file in target/debug/cvalid-*;    do mkdir -p "target/cov/$(basename $file)"; kcov --coveralls-id=$TRAVIS_JOB_ID --exclude-pattern=/.cargo,/usr/lib --verify "target/cov/$(basename $file)" "$file"; done
+    - echo "The End"
 
