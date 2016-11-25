@@ -31,6 +31,7 @@ pub fn object(slice: &mut Peekable<&mut Chars>) -> Result<Json, Error>
 
         match stage {
             Stages::Start => match current {
+                ' ' | '\r' | '\n' | '\t' => { slice.next(); },
                 '{' => { stage = Stages::Index; slice.next(); },
 
                 // Waiting for quotation mark.
@@ -39,6 +40,7 @@ pub fn object(slice: &mut Peekable<&mut Chars>) -> Result<Json, Error>
                 },
             },
             Stages::Index => match current {
+                ' ' | '\r' | '\n' | '\t' => { slice.next(); },
                 '}' => { stage = Stages::End; },
                 _   => {
                     stage = Stages::Colon;
@@ -50,6 +52,7 @@ pub fn object(slice: &mut Peekable<&mut Chars>) -> Result<Json, Error>
                 },
             },
             Stages::Colon => match current {
+                ' ' | '\r' | '\n' | '\t' => { slice.next(); },
                 ':' => { stage = Stages::Value; slice.next(); },
 
                 // Waiting for valid escape code.
@@ -68,6 +71,7 @@ pub fn object(slice: &mut Peekable<&mut Chars>) -> Result<Json, Error>
                 object.insert(index.clone(), node);
             },
             Stages::Comma => match current {
+                ' ' | '\r' | '\n' | '\t' => { slice.next(); },
                 ',' => { stage = Stages::Index; slice.next(); },
                 '}' => { stage = Stages::End; },
 
@@ -77,6 +81,7 @@ pub fn object(slice: &mut Peekable<&mut Chars>) -> Result<Json, Error>
                 },
             },
             Stages::End => match current {
+                ' ' | '\r' | '\n' | '\t' => { slice.next(); },
                 '}' => { slice.next(); break 'tokenizer; },
                 // Waiting for valid escape code.
                 _ => {
