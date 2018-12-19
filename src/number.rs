@@ -11,9 +11,9 @@ impl Number
     pub fn to_string(&self) -> String
     {
         match self {
-            &Number::Unsigned(value) => value.to_string(),
-            &Number::Integer(value)  => value.to_string(),
-            &Number::Float(value)    => value.to_string(),
+            Number::Unsigned(value) => value.to_string(),
+            Number::Integer(value)  => value.to_string(),
+            Number::Float(value)    => value.to_string(),
         }
     }
 }

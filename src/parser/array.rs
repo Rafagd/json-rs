@@ -1,9 +1,9 @@
 use std::iter::Peekable;
 use std::str::Chars;
 
-use error::Error;
-use json::Json;
-use parser::node;
+use crate::error::Error;
+use crate::json::Json;
+use crate::parser::node;
 
 pub fn array(slice: &mut Peekable<&mut Chars>) -> Result<Json, Error>
 {

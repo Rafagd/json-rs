@@ -2,9 +2,9 @@ use std::collections::HashMap;
 use std::iter::Peekable;
 use std::str::Chars;
 
-use error::Error;
-use json::Json;
-use parser::{ node, string };
+use crate::error::Error;
+use crate::json::Json;
+use crate::parser::{ node, string };
 
 pub fn object(slice: &mut Peekable<&mut Chars>) -> Result<Json, Error>
 {

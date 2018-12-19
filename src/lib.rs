@@ -7,3 +7,4 @@ pub use self::error::Error;
 pub use self::json::Json;
 pub use self::number::Number;
 
+pub use self::parser::*;

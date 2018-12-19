@@ -9,3 +9,4 @@ readme      = "README.md"
 keywords    = [ "json", "parser", "simple", "easy" ]
 license     = "BSD-2-Clause"
 
+edition="2018"

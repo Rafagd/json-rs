@@ -1,9 +1,9 @@
 use std::iter::Peekable;
 use std::str::Chars;
 
-use error::Error;
-use json::Json;
-use number::Number;
+use crate::error::Error;
+use crate::json::Json;
+use crate::number::Number;
 
 pub fn number(slice: &mut Peekable<&mut Chars>) -> Result<Json, Error>
 {

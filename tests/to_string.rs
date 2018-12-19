@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 extern crate simple_json;
-use simple_json::{ Json, Number };
+use simple_json::Json;
 
 macro_rules! test {
     ($jsn:expr, $val:expr) => {{

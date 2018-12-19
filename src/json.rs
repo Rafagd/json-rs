@@ -1,8 +1,9 @@
 use std::collections::HashMap;
 
-use error::Error;
-use parser::node;
-use number::Number;
+
+use crate::error::Error;
+use crate::parser::node;
+use crate::number::Number;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Json {
@@ -28,19 +29,19 @@ impl Json {
         let mut string: String = String::new();
 
         match self {
-            &Json::Null => {
+            Json::Null => {
                 string.push_str("null");
             },
-            &Json::Boolean(value) => {
+            Json::Boolean(value) => {
                 string.push_str(
-                    if value { "true"  }
-                    else     { "false" }
+                    if *value { "true"  }
+                    else      { "false" }
                 );
             },
-            &Json::Number(ref value) => {
+            Json::Number(ref value) => {
                 string.push_str(value.to_string().as_str());
             },
-            &Json::String(ref value) => {
+            Json::String(ref value) => {
                 string.push('"');
                 for chr in value.chars() {
                     if chr == '"' {
@@ -50,7 +51,7 @@ impl Json {
                 }
                 string.push('"');
             },
-            &Json::Array(ref value) => {
+            Json::Array(ref value) => {
                 let mut first = true;
 
                 string.push('[');
@@ -63,7 +64,7 @@ impl Json {
                 }
                 string.push(']');
             },
-            &Json::Object(ref value) => {
+            Json::Object(ref value) => {
                 let mut first = true;
 
                 string.push('{');
@@ -135,7 +136,7 @@ impl From<i32> for Json
 {
     fn from(number: i32) -> Json
     {
-        Json::Number(Number::Integer(number as i64))
+        Json::Number(Number::Integer(i64::from(number)))
     }
 }
 
@@ -264,7 +265,7 @@ impl From<Json> for bool
 
 impl From<Json> for ()
 {
-    fn from(json: Json) -> ()
+    fn from(json: Json)
     {
         if json != Json::Null {
             panic!("Expecting Json::Null, got {:?}", json);
